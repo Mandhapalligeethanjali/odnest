@@ -27,6 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth',     require('./routes/authRoutes'));
 app.use('/api/users',    require('./routes/userRoutes'));
 app.use('/api/projects', require('./routes/projectRoutes'));
+app.use('/api/bids', require('./routes/bidRoutes'));
 
 app.get('/', (req, res) => {
   res.json({ message: '🚀 HyperLocal Freelance API is running!' });
