@@ -1,3 +1,9 @@
 const router = require('express').Router();
-router.get('/', (req, res) => res.json({ message: 'Auth routes working' }));
+const { register, login, getMe } = require('../controllers/authController');
+const { protect } = require('../middleware/authMiddleware');
+
+router.post('/register', register);
+router.post('/login',    login);
+router.get('/me',        protect, getMe);
+
 module.exports = router;
