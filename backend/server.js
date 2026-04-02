@@ -30,6 +30,8 @@ app.use('/api/projects', require('./routes/projectRoutes'));
 app.use('/api/bids', require('./routes/bidRoutes'));
 app.use('/api/milestones', require('./routes/milestoneRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/reviews',  require('./routes/reviewRoutes'));
+app.use('/api/disputes', require('./routes/disputeRoutes'));
 
 app.get('/', (req, res) => {
   res.json({ message: '🚀 HyperLocal Freelance API is running!' });
