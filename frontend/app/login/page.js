@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import { Briefcase, Eye, EyeOff } from 'lucide-react';
+import { Briefcase, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,103 +31,160 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="auth-layout">
+      {/* LEFT SECTION - Brand Side */}
+      <div className="auth-left">
+        <div className="auth-left-dots" />
+        <div className="auth-left-glow" />
 
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <Briefcase size={20} className="text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">FreelanceHub</span>
+        <div className="navbar-logo" style={{ position: 'relative' }}>
+          <div className="logo-icon">
+            <Briefcase size={18} style={{ color: 'var(--navy)' }} />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
-          <p className="text-gray-500 mt-2">Sign in to your account</p>
+          <span className="logo-text">ODnest</span>
         </div>
 
-        {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <div style={{ position: 'relative' }}>
+          <h2 className="auth-tagline">
+            Welcome<br />
+            <span>Back to Success</span>
+          </h2>
+          <p className="auth-tagline-desc">
+            Access your projects, connect with clients, and grow your freelance career on India's most professional platform.
+          </p>
+          
+          <div className="auth-feature-list">
+            {[
+              'Access your personalized dashboard',
+              'Manage ongoing projects',
+              'Track your earnings in real-time',
+              'Connect with top professionals'
+            ].map((feature, i) => (
+              <div key={i} className="auth-feature">
+                <div className="auth-feature-dot">
+                  <div className="auth-feature-dot-inner" />
+                </div>
+                <span>{feature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+        <p style={{ fontSize: 12, color: 'var(--slate)', position: 'relative' }}>
+          © 2025 ODnest. All rights reserved.
+        </p>
+      </div>
+
+      {/* RIGHT SECTION - Login Form */}
+      <div className="auth-right">
+        <div className="auth-form-box">
+          <button className="auth-back" onClick={() => router.push('/')}>
+            <ArrowLeft size={16} /> Back to home
+          </button>
+
+          <h2 className="auth-title">Welcome back</h2>
+          <p className="auth-subtitle">Sign in to your account</p>
+
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="input-group">
+              <label className="input-label">Email Address</label>
               <input
                 type="email"
                 name="email"
+                className="input"
                 value={formData.email}
                 onChange={handleChange}
                 required
                 placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <div className="relative">
+            <div className="input-group">
+              <label className="input-label">Password</label>
+              <div className="input-wrap">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
+                  className="input"
                   value={formData.password}
                   onChange={handleChange}
                   required
                   placeholder="Enter your password"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition pr-12"
+                  style={{ paddingRight: 48 }}
                 />
                 <button
                   type="button"
+                  className="input-icon-right"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
-            <button
-              type="submit"
+            <button 
+              type="submit" 
+              className="btn btn-gold btn-full"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 rounded-xl font-semibold transition text-sm"
+              style={{ opacity: loading ? 0.6 : 1 }}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
-
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-gray-100"></div>
-            <span className="text-xs text-gray-400">OR</span>
-            <div className="flex-1 h-px bg-gray-100"></div>
-          </div>
+          <div className="divider" style={{ margin: '24px 0' }} />
 
-          {/* Test accounts */}
-          <div className="bg-gray-50 rounded-xl p-4 mb-4">
-            <p className="text-xs font-medium text-gray-500 mb-3">Quick Test Login:</p>
-            <div className="flex gap-2">
+          {/* Test Accounts */}
+          <div className="auth-quick">
+            <div className="auth-quick-label">Quick Test Login:</div>
+            <div className="auth-quick-btns">
               <button
-                onClick={() => setFormData({ email: 'john@example.com', password: '123456' })}
-                className="flex-1 text-xs bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition font-medium"
+                type="button"
+                className="auth-quick-btn"
+                onClick={() => setFormData({ email: 'client@test.com', password: '123456' })}
+                style={{ 
+                  background: 'rgba(201,168,76,0.05)', 
+                  border: '1px solid rgba(201,168,76,0.2)',
+                  borderRadius: '8px',
+                  padding: '8px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  color: 'var(--gold)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(201,168,76,0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(201,168,76,0.05)'}
               >
                 Client Account
               </button>
               <button
-                onClick={() => setFormData({ email: 'jane@example.com', password: '123456' })}
-                className="flex-1 text-xs bg-green-50 text-green-600 py-2 rounded-lg hover:bg-green-100 transition font-medium"
+                type="button"
+                className="auth-quick-btn"
+                onClick={() => setFormData({ email: 'freelancer@test.com', password: '123456' })}
+                style={{ 
+                  background: 'rgba(201,168,76,0.05)', 
+                  border: '1px solid rgba(201,168,76,0.2)',
+                  borderRadius: '8px',
+                  padding: '8px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  color: 'var(--gold)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(201,168,76,0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(201,168,76,0.05)'}
               >
                 Freelancer Account
               </button>
             </div>
           </div>
 
-          <p className="text-center text-sm text-gray-500">
+          <p className="auth-footer-text">
             Don't have an account?{' '}
-            <button
-              onClick={() => router.push('/register')}
-              className="text-blue-600 font-semibold hover:underline"
-            >
-              Sign up free
+            <button className="auth-footer-link" onClick={() => router.push('/register')}>
+              Create account
             </button>
           </p>
         </div>

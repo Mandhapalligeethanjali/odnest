@@ -63,7 +63,7 @@ export default function FreelancerDashboard() {
       <aside className="sidebar">
         <div className="sidebar-logo">
           <div className="logo-icon"><Briefcase size={18} style={{ color: 'var(--navy)' }} /></div>
-          <span className="logo-text">FreelanceHub</span>
+          <span className="logo-text">ODnest</span>
         </div>
 
         <div className="sidebar-user">
@@ -75,18 +75,36 @@ export default function FreelancerDashboard() {
         </div>
 
         <nav className="sidebar-nav">
-          {[
-            { icon: <Briefcase size={17} />, label: 'My Bids',         active: true,  action: () => {} },
-            { icon: <Search size={17} />,    label: 'Browse Projects',  active: false, action: () => router.push('/projects') },
-            { icon: <DollarSign size={17} />,label: 'Earnings',         active: false, action: () => {} },
-            { icon: <Star size={17} />,      label: 'Reviews',          active: false, action: () => {} },
-            { icon: <Settings size={17} />,  label: 'Settings',         active: false, action: () => {} },
-          ].map((item, i) => (
-            <button key={i} onClick={item.action}
-              className={`sidebar-link${item.active ? ' active-green' : ''}`}>
-              {item.icon} {item.label}
-            </button>
-          ))}
+          <button 
+            onClick={() => router.push('/dashboard/freelancer')} 
+            className="sidebar-link active-green"
+          >
+            <Briefcase size={17} /> My Bids
+          </button>
+          <button 
+            onClick={() => router.push('/dashboard/freelancer/browse-projects')} 
+            className="sidebar-link"
+          >
+            <Search size={17} /> Browse Projects
+          </button>
+          <button 
+            onClick={() => router.push('/dashboard/freelancer/earnings')} 
+            className="sidebar-link"
+          >
+            <DollarSign size={17} /> Earnings
+          </button>
+          <button 
+            onClick={() => router.push('/dashboard/freelancer/reviews')} 
+            className="sidebar-link"
+          >
+            <Star size={17} /> Reviews
+          </button>
+          <button 
+            onClick={() => router.push('/dashboard/settings')} 
+            className="sidebar-link"
+          >
+            <Settings size={17} /> Settings
+          </button>
         </nav>
 
         <div className="sidebar-footer">
@@ -108,7 +126,7 @@ export default function FreelancerDashboard() {
             <button style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', background: 'var(--navy-3)', border: '1px solid rgba(201,168,76,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Bell size={18} style={{ color: 'var(--slate-light)' }} />
             </button>
-            <button className="btn btn-success" onClick={() => router.push('/projects')}>
+            <button className="btn btn-success" onClick={() => router.push('/dashboard/freelancer/browse-projects')}>
               <Search size={16} /> Find Projects
             </button>
           </div>
@@ -129,7 +147,7 @@ export default function FreelancerDashboard() {
         <div className="table-card">
           <div className="table-header">
             <span className="table-title">My Proposals</span>
-            <button className="btn btn-success btn-sm" onClick={() => router.push('/projects')}>
+            <button className="btn btn-success btn-sm" onClick={() => router.push('/dashboard/freelancer/browse-projects')}>
               Browse Projects →
             </button>
           </div>
@@ -139,7 +157,7 @@ export default function FreelancerDashboard() {
               <Search size={40} className="empty-icon" />
               <p className="empty-title">No proposals yet</p>
               <p className="empty-desc">Browse open projects and start submitting proposals</p>
-              <button className="btn btn-success" onClick={() => router.push('/projects')}>
+              <button className="btn btn-success" onClick={() => router.push('/dashboard/freelancer/browse-projects')}>
                 Browse Projects
               </button>
             </div>

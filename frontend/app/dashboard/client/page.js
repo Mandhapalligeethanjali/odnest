@@ -5,51 +5,63 @@ import { useAuth } from '../../../context/AuthContext';
 import API from '../../../utils/api';
 import toast from 'react-hot-toast';
 import {
-  Briefcase, Plus, Users, DollarSign,
-  Clock, CheckCircle, LogOut, Star,
-  ChevronRight, Bell, Settings, Search, TrendingUp
+  Briefcase, Search, DollarSign, Star,
+  LogOut, Settings, Bell, Users,
+  PlusCircle, TrendingUp, CheckCircle, Clock
 } from 'lucide-react';
 
 export default function ClientDashboard() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [projects, setProjects] = useState([]);
-  const [payments, setPayments] = useState([]);
-  const [loading, setLoading]   = useState(true);
+  const [bids, setBids] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) { router.push('/login'); return; }
-    if (user.role !== 'client') { router.push('/dashboard/freelancer'); return; }
+    if (!user) { 
+      router.push('/login'); 
+      return; 
+    }
+    if (user.role !== 'client') { 
+      router.push('/dashboard/freelancer'); 
+      return; 
+    }
     fetchData();
   }, [user]);
 
   const fetchData = async () => {
     try {
-      const [pRes, pyRes] = await Promise.all([
-        API.get('/projects/my/projects'),
-        API.get('/payments/my')
+      const [pRes, bRes] = await Promise.all([
+        API.get('/projects/my').catch(err => ({ data: { projects: [] } })),
+        API.get('/bids/my/projects').catch(err => ({ data: { bids: [] } }))
       ]);
-      setProjects(pRes.data.projects);
-      setPayments(pyRes.data.payments);
-    } catch { toast.error('Failed to load data'); }
-    finally { setLoading(false); }
+      
+      // Safely set data with fallbacks
+      setProjects(pRes?.data?.projects || []);
+      setBids(bRes?.data?.bids || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error('Failed to load dashboard data');
+      // Set empty arrays to prevent null errors
+      setProjects([]);
+      setBids([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const totalSpent = payments.reduce((s, p) => s + Number(p.amount), 0);
+  // Safely calculate stats with null checks
+  const openProjects = projects?.filter(p => p?.status === 'open')?.length || 0;
+  const inProgressProjects = projects?.filter(p => p?.status === 'in_progress')?.length || 0;
+  const completedProjects = projects?.filter(p => p?.status === 'completed')?.length || 0;
+  const totalBids = bids?.length || 0;
 
   const stats = [
-    { label: 'Total Projects', value: projects.length,                                          icon: <Briefcase size={20} style={{ color: 'var(--gold)' }} />,    bg: 'rgba(201,168,76,0.08)' },
-    { label: 'In Progress',    value: projects.filter(p => p.status === 'in_progress').length,  icon: <Clock size={20} style={{ color: 'var(--info)' }} />,         bg: 'rgba(59,130,246,0.08)' },
-    { label: 'Completed',      value: projects.filter(p => p.status === 'completed').length,    icon: <CheckCircle size={20} style={{ color: 'var(--success)' }} />, bg: 'rgba(16,185,129,0.08)' },
-    { label: 'Total Spent',    value: `₹${totalSpent.toLocaleString()}`,                        icon: <TrendingUp size={20} style={{ color: 'var(--gold)' }} />,     bg: 'rgba(201,168,76,0.08)' },
+    { label: 'Open Projects', value: openProjects, icon: <Briefcase size={20} />, bg: 'rgba(201,168,76,0.08)' },
+    { label: 'In Progress', value: inProgressProjects, icon: <Clock size={20} />, bg: 'rgba(59,130,246,0.08)' },
+    { label: 'Completed', value: completedProjects, icon: <CheckCircle size={20} />, bg: 'rgba(16,185,129,0.08)' },
+    { label: 'Total Bids', value: totalBids, icon: <Users size={20} />, bg: 'rgba(139,92,246,0.08)' },
   ];
-
-  const statusBadge = {
-    open:        'badge badge-blue',
-    in_progress: 'badge badge-gold',
-    completed:   'badge badge-green',
-    cancelled:   'badge badge-red',
-  };
 
   if (loading) return (
     <div className="spinner-wrap">
@@ -59,35 +71,40 @@ export default function ClientDashboard() {
 
   return (
     <div className="dashboard-layout">
-
       {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="sidebar-logo">
           <div className="logo-icon"><Briefcase size={18} style={{ color: 'var(--navy)' }} /></div>
-          <span className="logo-text">FreelanceHub</span>
+          <span className="logo-text">ODnest</span>
         </div>
 
         <div className="sidebar-user">
-          <div className="avatar avatar-gold">{user?.name?.charAt(0).toUpperCase()}</div>
+          <div className="avatar avatar-gold">{user?.name?.charAt(0)?.toUpperCase() || 'C'}</div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--white)' }}>{user?.name}</div>
-            <div style={{ fontSize: 12, color: 'var(--gold)' }}>Client Account</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--white)' }}>{user?.name || 'Client'}</div>
+            <div style={{ fontSize: 12, color: 'var(--gold)' }}>Client</div>
           </div>
         </div>
 
         <nav className="sidebar-nav">
-          {[
-            { icon: <Briefcase size={17} />, label: 'My Projects',   active: true,  action: () => {} },
-            { icon: <Search size={17} />,    label: 'Find Talent',   active: false, action: () => router.push('/freelancers') },
-            { icon: <DollarSign size={17} />,label: 'Payments',      active: false, action: () => {} },
-            { icon: <Star size={17} />,      label: 'Reviews',       active: false, action: () => {} },
-            { icon: <Settings size={17} />,  label: 'Settings',      active: false, action: () => {} },
-          ].map((item, i) => (
-            <button key={i} onClick={item.action}
-              className={`sidebar-link${item.active ? ' active-gold' : ''}`}>
-              {item.icon} {item.label}
-            </button>
-          ))}
+          <button onClick={() => router.push('/dashboard/client')} className="sidebar-link active-gold">
+            <Briefcase size={17} /> My Projects
+          </button>
+          <button onClick={() => router.push('/dashboard/client/find-talent')} className="sidebar-link">
+            <Search size={17} /> Find Talent
+          </button>
+          <button onClick={() => router.push('/dashboard/client/post-project')} className="sidebar-link">
+            <PlusCircle size={17} /> Post Project
+          </button>
+          <button onClick={() => router.push('/dashboard/client/payments')} className="sidebar-link">
+            <DollarSign size={17} /> Payments
+          </button>
+          <button onClick={() => router.push('/dashboard/client/reviews')} className="sidebar-link">
+            <Star size={17} /> Reviews
+          </button>
+          <button onClick={() => router.push('/dashboard/settings')} className="sidebar-link">
+            <Settings size={17} /> Settings
+          </button>
         </nav>
 
         <div className="sidebar-footer">
@@ -97,23 +114,16 @@ export default function ClientDashboard() {
         </div>
       </aside>
 
-      {/* MAIN */}
+      {/* MAIN CONTENT */}
       <main className="dashboard-main">
-
-        {/* Header */}
         <div className="dashboard-header">
           <div>
-            <p className="dashboard-subtitle">Good day,</p>
-            <h1 className="dashboard-title">{user?.name} 👋</h1>
+            <p className="dashboard-subtitle">Welcome back,</p>
+            <h1 className="dashboard-title">{user?.name || 'Client'} 👋</h1>
           </div>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <button style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', background: 'var(--navy-3)', border: '1px solid rgba(201,168,76,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Bell size={18} style={{ color: 'var(--slate-light)' }} />
-            </button>
-            <button className="btn btn-gold" onClick={() => router.push('/projects/create')}>
-              <Plus size={16} /> Post Project
-            </button>
-          </div>
+          <button className="btn btn-gold" onClick={() => router.push('/dashboard/client/post-project')}>
+            <PlusCircle size={16} /> Post New Project
+          </button>
         </div>
 
         {/* Stats */}
@@ -127,40 +137,59 @@ export default function ClientDashboard() {
           ))}
         </div>
 
-        {/* Projects Table */}
+        {/* Recent Projects */}
         <div className="table-card">
           <div className="table-header">
             <span className="table-title">My Projects</span>
-            <button className="btn btn-gold btn-sm" onClick={() => router.push('/projects/create')}>
-              <Plus size={14} /> New Project
+            <button className="btn btn-outline btn-sm" onClick={() => router.push('/dashboard/client/post-project')}>
+              Post New Project →
             </button>
           </div>
 
-          {projects.length === 0 ? (
+          {!projects || projects.length === 0 ? (
             <div className="empty-state">
               <Briefcase size={40} className="empty-icon" />
               <p className="empty-title">No projects yet</p>
-              <p className="empty-desc">Post your first project and start receiving bids</p>
-              <button className="btn btn-gold" onClick={() => router.push('/projects/create')}>
-                Post First Project
+              <p className="empty-desc">Post your first project to start hiring freelancers</p>
+              <button className="btn btn-gold" onClick={() => router.push('/dashboard/client/post-project')}>
+                Post Project
               </button>
             </div>
           ) : (
             <>
               <div className="table-head" style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr' }}>
-                <span>Project</span><span>Budget</span><span>Status</span><span>Action</span>
+                <span>Project Title</span>
+                <span>Budget</span>
+                <span>Status</span>
+                <span>Bids</span>
               </div>
-              {projects.map(p => (
-                <div key={p.id} className="table-row" style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr' }}>
+              {projects.slice(0, 5).map(project => (
+                <div key={project.id} className="table-row" style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr' }}>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--white)', marginBottom: 4 }}>{p.title}</div>
-                    <div style={{ fontSize: 12, color: 'var(--slate)' }}>{p.skills_required?.slice(0,2).join(', ')}</div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--white)', marginBottom: 4 }}>
+                      {project.title || 'Untitled'}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--slate)' }}>
+                      Deadline: {project.deadline ? new Date(project.deadline).toLocaleDateString() : 'Not set'}
+                    </div>
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--gold)' }}>₹{Number(p.budget).toLocaleString()}</div>
-                  <div><span className={statusBadge[p.status] || 'badge badge-slate'}>{p.status.replace('_',' ')}</span></div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--gold)' }}>
+                    ₹{Number(project.budget || 0).toLocaleString()}
+                  </div>
                   <div>
-                    <button className="btn btn-outline btn-sm" onClick={() => router.push(`/projects/${p.id}`)}>
-                      View Bids <ChevronRight size={13} />
+                    <span className={`badge ${
+                      project.status === 'open' ? 'badge-gold' : 
+                      project.status === 'in_progress' ? 'badge-blue' : 'badge-green'
+                    }`}>
+                      {project.status || 'unknown'}
+                    </span>
+                  </div>
+                  <div>
+                    <button 
+                      className="btn btn-outline btn-sm" 
+                      onClick={() => router.push(`/dashboard/client/projects/${project.id}/bids`)}
+                    >
+                      View Bids →
                     </button>
                   </div>
                 </div>
@@ -168,29 +197,6 @@ export default function ClientDashboard() {
             </>
           )}
         </div>
-
-        {/* Payments */}
-        {payments.length > 0 && (
-          <div className="table-card">
-            <div className="table-header">
-              <span className="table-title">Recent Payments</span>
-            </div>
-            {payments.slice(0, 5).map(p => (
-              <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 28px', borderBottom: '1px solid rgba(201,168,76,0.05)' }}>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--white)' }}>{p.milestone_title}</div>
-                  <div style={{ fontSize: 12, color: 'var(--slate)' }}>{p.project_title}</div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--gold)' }}>₹{Number(p.amount).toLocaleString()}</div>
-                  <span className={p.escrow_status === 'released' ? 'badge badge-green' : 'badge badge-gold'}>
-                    {p.escrow_status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </main>
     </div>
   );
