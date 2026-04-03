@@ -3,33 +3,26 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import { Briefcase, Eye, EyeOff, Users, Building } from 'lucide-react';
+import { Briefcase, Eye, EyeOff, ArrowLeft, Users, Building2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: '',
-    location: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [form, setForm]         = useState({ name: '', email: '', password: '', role: '', location: '' });
+  const [loading, setLoading]   = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (!formData.role) return toast.error('Please select your role');
-    if (formData.password.length < 6) return toast.error('Password must be at least 6 characters');
+    if (!form.role) return toast.error('Please select your role');
+    if (form.password.length < 6) return toast.error('Password must be at least 6 characters');
     setLoading(true);
     try {
-      const user = await register(formData.name, formData.email, formData.password, formData.role, formData.location);
-      toast.success('Account created successfully!');
-      if (user.role === 'client') router.push('/dashboard/client');
-      else router.push('/dashboard/freelancer');
+      const user = await register(form.name, form.email, form.password, form.role, form.location);
+      toast.success('Account created!');
+      router.push(user.role === 'client' ? '/dashboard/client' : '/dashboard/freelancer');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
     } finally {
@@ -38,144 +31,108 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="auth-layout">
 
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <Briefcase size={20} className="text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">FreelanceHub</span>
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900">Create your account</h2>
-          <p className="text-gray-500 mt-2">Join thousands of freelancers and clients</p>
+      {/* LEFT */}
+      <div className="auth-left">
+        <div className="auth-left-dots" />
+        <div className="auth-left-glow" />
+
+        <div className="navbar-logo" style={{ position: 'relative' }}>
+          <div className="logo-icon"><Briefcase size={18} style={{ color: 'var(--navy)' }} /></div>
+          <span className="logo-text">FreelanceHub</span>
         </div>
 
-        {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <div style={{ position: 'relative' }}>
+          <h2 className="auth-tagline">Join the<br /><span>Elite Network.</span></h2>
+          <p className="auth-tagline-desc">
+            Connect with top clients and premium projects.
+            Build your reputation on India's most professional platform.
+          </p>
+          <div className="auth-stat-row">
+            {[
+              { v: '12,000+', l: 'Verified Professionals' },
+              { v: '₹3.2 Cr+', l: 'Paid to Freelancers' },
+              { v: '4.9★', l: 'Average Platform Rating' },
+            ].map((s, i) => (
+              <div key={i} className="auth-stat">
+                <span className="auth-stat-val">{s.v}</span>
+                <span className="auth-stat-label">{s.l}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-            {/* Role Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">I want to...</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: 'client' })}
-                  className={`p-4 rounded-xl border-2 text-left transition ${
-                    formData.role === 'client'
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <Building size={20} className={formData.role === 'client' ? 'text-blue-600' : 'text-gray-400'} />
-                  <p className={`font-semibold text-sm mt-2 ${formData.role === 'client' ? 'text-blue-700' : 'text-gray-700'}`}>
-                    Hire Talent
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">I'm a client</p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: 'freelancer' })}
-                  className={`p-4 rounded-xl border-2 text-left transition ${
-                    formData.role === 'freelancer'
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <Users size={20} className={formData.role === 'freelancer' ? 'text-green-600' : 'text-gray-400'} />
-                  <p className={`font-semibold text-sm mt-2 ${formData.role === 'freelancer' ? 'text-green-700' : 'text-gray-700'}`}>
-                    Find Work
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">I'm a freelancer</p>
+        <p style={{ fontSize: 12, color: 'var(--slate)', position: 'relative' }}>© 2025 FreelanceHub</p>
+      </div>
+
+      {/* RIGHT */}
+      <div className="auth-right">
+        <div className="auth-form-box">
+          <button className="auth-back" onClick={() => router.push('/')}>
+            <ArrowLeft size={16} /> Back to home
+          </button>
+
+          <h2 className="auth-title">Create account</h2>
+          <p className="auth-subtitle">Join the FreelanceHub professional network</p>
+
+          <form className="auth-form" onSubmit={submit}>
+
+            {/* Role */}
+            <div className="input-group">
+              <label className="input-label">I want to</label>
+              <div className="role-grid">
+                {[
+                  { role: 'client',     icon: <Building2 size={20} />, title: 'Hire Talent',  sub: "I'm a client" },
+                  { role: 'freelancer', icon: <Users size={20} />,     title: 'Find Work',    sub: "I'm a freelancer" },
+                ].map((r) => (
+                  <button key={r.role} type="button"
+                    className={`role-card${form.role === r.role ? ' active' : ''}`}
+                    onClick={() => setForm({ ...form, role: r.role })}
+                    style={{ color: form.role === r.role ? 'var(--gold)' : 'var(--slate-light)' }}>
+                    {r.icon}
+                    <div className="role-card-title">{r.title}</div>
+                    <div className="role-card-sub">{r.sub}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {[
+              { label: 'Full Name',      name: 'name',     type: 'text',  placeholder: 'John Doe',           req: true },
+              { label: 'Email Address',  name: 'email',    type: 'email', placeholder: 'you@example.com',    req: true },
+              { label: 'Location',       name: 'location', type: 'text',  placeholder: 'Hyderabad, India',   req: false },
+            ].map((f) => (
+              <div key={f.name} className="input-group">
+                <label className="input-label">{f.label}</label>
+                <input className="input" type={f.type} name={f.name}
+                  value={form[f.name]} onChange={handle}
+                  required={f.req} placeholder={f.placeholder} />
+              </div>
+            ))}
+
+            <div className="input-group">
+              <label className="input-label">Password</label>
+              <div className="input-wrap">
+                <input className="input" type={showPass ? 'text' : 'password'}
+                  name="password" value={form.password} onChange={handle}
+                  required placeholder="Min 6 characters"
+                  style={{ paddingRight: 48 }} />
+                <button type="button" className="input-icon-right" onClick={() => setShowPass(!showPass)}>
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                placeholder="John Doe"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="Hyderabad, India"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  placeholder="Min 6 characters"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 rounded-xl font-semibold transition text-sm"
-            >
+            <button type="submit" className="btn btn-gold btn-full"
+              style={{ opacity: loading ? 0.6 : 1 }} disabled={loading}>
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
-
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="auth-footer-text">
             Already have an account?{' '}
-            <button
-              onClick={() => router.push('/login')}
-              className="text-blue-600 font-semibold hover:underline"
-            >
-              Sign in
-            </button>
-          </p>
-
-          <p className="text-center text-xs text-gray-400 mt-4">
-            By signing up, you agree to our Terms of Service and Privacy Policy
+            <button className="auth-footer-link" onClick={() => router.push('/login')}>Sign in</button>
           </p>
         </div>
       </div>

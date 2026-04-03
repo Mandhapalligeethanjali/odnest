@@ -11,18 +11,16 @@ export const AuthProvider = ({ children }) => {
   const router                = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const token   = localStorage.getItem('token');
+    const saved   = localStorage.getItem('user');
+    if (token && saved) setUser(JSON.parse(saved));
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
     const { data } = await API.post('/auth/login', { email, password });
     localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
+    localStorage.setItem('user',  JSON.stringify(data.user));
     setUser(data.user);
     return data.user;
   };
@@ -30,7 +28,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password, role, location) => {
     const { data } = await API.post('/auth/register', { name, email, password, role, location });
     localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
+    localStorage.setItem('user',  JSON.stringify(data.user));
     setUser(data.user);
     return data.user;
   };
