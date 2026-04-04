@@ -7,20 +7,22 @@ import toast from 'react-hot-toast';
 import {
   Briefcase, Search, DollarSign, Clock,
   Star, LogOut, Settings, Bell,
-  ChevronRight, TrendingUp, CheckCircle
+  ChevronRight, TrendingUp, CheckCircle, MessageSquare, Mail
 } from 'lucide-react';
 
 export default function FreelancerDashboard() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [bids, setBids]         = useState([]);
+  const [bids, setBids] = useState([]);
   const [payments, setPayments] = useState([]);
-  const [loading, setLoading]   = useState(true);
+  const [invitationsCount, setInvitationsCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) { router.push('/login'); return; }
     if (user.role !== 'freelancer') { router.push('/dashboard/client'); return; }
     fetchData();
+    fetchInvitationsCount();
   }, [user]);
 
   const fetchData = async () => {
@@ -29,23 +31,36 @@ export default function FreelancerDashboard() {
         API.get('/bids/my/bids'),
         API.get('/payments/my')
       ]);
-      setBids(bRes.data.bids);
-      setPayments(pRes.data.payments);
-    } catch { toast.error('Failed to load data'); }
-    finally { setLoading(false); }
+      setBids(bRes.data.bids || []);
+      setPayments(pRes.data.payments || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchInvitationsCount = async () => {
+    try {
+      const response = await API.get('/projects/invitations');
+      setInvitationsCount(response.data.invitations?.length || 0);
+    } catch (error) {
+      console.error('Error fetching invitations:', error);
+    }
   };
 
   const earned = payments.filter(p => p.escrow_status === 'released').reduce((s, p) => s + Number(p.amount), 0);
 
   const stats = [
-    { label: 'Proposals Sent', value: bids.length,                                        icon: <Briefcase size={20} style={{ color: 'var(--gold)' }} />,    bg: 'rgba(201,168,76,0.08)' },
-    { label: 'Accepted',       value: bids.filter(b => b.status === 'accepted').length,    icon: <CheckCircle size={20} style={{ color: 'var(--success)' }} />, bg: 'rgba(16,185,129,0.08)' },
-    { label: 'Pending',        value: bids.filter(b => b.status === 'pending').length,     icon: <Clock size={20} style={{ color: 'var(--info)' }} />,          bg: 'rgba(59,130,246,0.08)' },
-    { label: 'Total Earned',   value: `₹${earned.toLocaleString()}`,                       icon: <TrendingUp size={20} style={{ color: 'var(--gold)' }} />,     bg: 'rgba(201,168,76,0.08)' },
+    { label: 'Proposals Sent', value: bids.length, icon: <Briefcase size={20} style={{ color: 'var(--gold)' }} />, bg: 'rgba(201,168,76,0.08)' },
+    { label: 'Accepted', value: bids.filter(b => b.status === 'accepted').length, icon: <CheckCircle size={20} style={{ color: 'var(--success)' }} />, bg: 'rgba(16,185,129,0.08)' },
+    { label: 'Pending', value: bids.filter(b => b.status === 'pending').length, icon: <Clock size={20} style={{ color: 'var(--info)' }} />, bg: 'rgba(59,130,246,0.08)' },
+    { label: 'Total Earned', value: `₹${earned.toLocaleString()}`, icon: <TrendingUp size={20} style={{ color: 'var(--gold)' }} />, bg: 'rgba(201,168,76,0.08)' },
   ];
 
   const bidBadge = {
-    pending:  'badge badge-blue',
+    pending: 'badge badge-blue',
     accepted: 'badge badge-green',
     rejected: 'badge badge-red',
   };
@@ -58,7 +73,6 @@ export default function FreelancerDashboard() {
 
   return (
     <div className="dashboard-layout">
-
       {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="sidebar-logo">
@@ -75,34 +89,30 @@ export default function FreelancerDashboard() {
         </div>
 
         <nav className="sidebar-nav">
-          <button 
-            onClick={() => router.push('/dashboard/freelancer')} 
-            className="sidebar-link active-green"
-          >
+          <button onClick={() => router.push('/dashboard/freelancer')} className="sidebar-link active-green">
             <Briefcase size={17} /> My Bids
           </button>
-          <button 
-            onClick={() => router.push('/dashboard/freelancer/browse-projects')} 
-            className="sidebar-link"
-          >
+          <button onClick={() => router.push('/dashboard/freelancer/browse-projects')} className="sidebar-link">
             <Search size={17} /> Browse Projects
           </button>
-          <button 
-            onClick={() => router.push('/dashboard/freelancer/earnings')} 
-            className="sidebar-link"
-          >
+          <button onClick={() => router.push('/dashboard/freelancer/invitations')} className="sidebar-link">
+            <Mail size={17} /> Invitations
+            {invitationsCount > 0 && (
+              <span className="badge badge-gold" style={{ marginLeft: 'auto' }}>
+                {invitationsCount}
+              </span>
+            )}
+          </button>
+          <button onClick={() => router.push('/dashboard/freelancer/earnings')} className="sidebar-link">
             <DollarSign size={17} /> Earnings
           </button>
-          <button 
-            onClick={() => router.push('/dashboard/freelancer/reviews')} 
-            className="sidebar-link"
-          >
+          <button onClick={() => router.push('/dashboard/freelancer/reviews')} className="sidebar-link">
             <Star size={17} /> Reviews
           </button>
-          <button 
-            onClick={() => router.push('/dashboard/settings')} 
-            className="sidebar-link"
-          >
+          <button onClick={() => router.push('/dashboard/messages')} className="sidebar-link">
+            <MessageSquare size={17} /> Messages
+          </button>
+          <button onClick={() => router.push('/dashboard/settings')} className="sidebar-link">
             <Settings size={17} /> Settings
           </button>
         </nav>
@@ -114,25 +124,19 @@ export default function FreelancerDashboard() {
         </div>
       </aside>
 
-      {/* MAIN */}
+      {/* MAIN CONTENT - Keep your existing main content here */}
       <main className="dashboard-main">
-
+        {/* Your existing dashboard content */}
         <div className="dashboard-header">
           <div>
             <p className="dashboard-subtitle">Welcome back,</p>
             <h1 className="dashboard-title">{user?.name} 👋</h1>
           </div>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <button style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', background: 'var(--navy-3)', border: '1px solid rgba(201,168,76,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Bell size={18} style={{ color: 'var(--slate-light)' }} />
-            </button>
-            <button className="btn btn-success" onClick={() => router.push('/dashboard/freelancer/browse-projects')}>
-              <Search size={16} /> Find Projects
-            </button>
-          </div>
+          <button className="btn btn-success" onClick={() => router.push('/dashboard/freelancer/browse-projects')}>
+            <Search size={16} /> Find Projects
+          </button>
         </div>
 
-        {/* Stats */}
         <div className="stats-grid">
           {stats.map((s, i) => (
             <div key={i} className="stat-card">

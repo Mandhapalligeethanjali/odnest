@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import {
   Briefcase, Search, DollarSign, Star, StarHalf,
   LogOut, Settings, Users, MapPin, Code,
-  Mail, Filter, X
+  Mail, Filter, X, MessageSquare
 } from 'lucide-react';
 
 export default function FindTalent() {
@@ -24,6 +24,7 @@ export default function FindTalent() {
   });
   const [selectedFreelancer, setSelectedFreelancer] = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);  // ← This was missing
   const [inviteData, setInviteData] = useState({
     project_id: '',
     message: ''
@@ -83,18 +84,30 @@ export default function FindTalent() {
 
   const sendInvitation = async (e) => {
     e.preventDefault();
+    if (!inviteData.project_id) {
+      toast.error('Please select a project');
+      return;
+    }
+    
+    setSubmitting(true);
     try {
-      await API.post('/projects/invite', {
+      const response = await API.post('/projects/invite', {
         freelancer_id: selectedFreelancer.id,
         project_id: inviteData.project_id,
         message: inviteData.message
       });
-      toast.success('Invitation sent successfully!');
-      setShowInviteModal(false);
-      setInviteData({ project_id: '', message: '' });
+      
+      if (response.data.success) {
+        toast.success('Invitation sent successfully!');
+        setShowInviteModal(false);
+        setInviteData({ project_id: '', message: '' });
+      }
     } catch (error) {
       console.error('Error sending invitation:', error);
-      toast.error(error.response?.data?.message || 'Failed to send invitation');
+      const errorMessage = error.response?.data?.message || 'Failed to send invitation';
+      toast.error(errorMessage);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -134,6 +147,9 @@ export default function FindTalent() {
           </button>
           <button onClick={() => router.push('/dashboard/client/reviews')} className="sidebar-link">
             <Star size={17} /> Reviews
+          </button>
+          <button onClick={() => router.push('/dashboard/messages')} className="sidebar-link">
+            <MessageSquare size={17} /> Messages
           </button>
           <button onClick={() => router.push('/dashboard/settings')} className="sidebar-link">
             <Settings size={17} /> Settings
@@ -352,8 +368,12 @@ export default function FindTalent() {
                   placeholder="Describe your project and why you think this freelancer would be a great fit..."
                 />
               </div>
-              <button type="submit" className="btn btn-gold btn-full">
-                Send Invitation
+              <button 
+                type="submit" 
+                className="btn btn-gold btn-full" 
+                disabled={submitting}
+              >
+                {submitting ? 'Sending...' : 'Send Invitation'}
               </button>
             </form>
           </div>

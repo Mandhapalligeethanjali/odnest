@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import {
   Briefcase, Search, DollarSign, Star,
   LogOut, Settings, Bell, Users,
-  PlusCircle, TrendingUp, CheckCircle, Clock
+  PlusCircle, TrendingUp, CheckCircle, Clock, MessageSquare
 } from 'lucide-react';
 
 export default function ClientDashboard() {
@@ -104,6 +104,9 @@ export default function ClientDashboard() {
           </button>
           <button onClick={() => router.push('/dashboard/settings')} className="sidebar-link">
             <Settings size={17} /> Settings
+          </button>
+          <button onClick={() => router.push('/dashboard/messages')} className="sidebar-link">
+            <MessageSquare size={17} /> Messages
           </button>
         </nav>
 
